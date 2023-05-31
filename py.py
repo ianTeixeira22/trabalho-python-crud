@@ -43,10 +43,10 @@ def criar_tabela_camisas():
 def janela_cadastro():
     
     def cadastrar_usuario():
-        nome_usuario = entry_nome_usuario.get()
-        senha = entry_senha.get()
-        telefone = entry_telefone.get()
-        endereco = entry_endereco.get()
+        nome_usuario = ent_nome_usuario.get()
+        senha = ent_senha.get()
+        telefone = ent_telefone.get()
+        endereco = ent_endereco.get()
 
         conexao = sqlite3.connect("database.db")
         cursor = conexao.cursor()
