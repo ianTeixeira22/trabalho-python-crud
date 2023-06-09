@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import sqlite3
 
 def criar_banco_camisas():
@@ -103,7 +104,7 @@ def fazer_login():
                     cursor = conexao.cursor()
                     cursor.execute("DELETE FROM camisas WHERE codigo = ?", (codigo,))
                     conexao.commit()
-                    print('camisa excluida')
+                    messagebox.showinfo('sucesso','camisa excluida')
                     limpar_campos()
                 except Exception as e:
                     print(f'Erro: {str(e)}')
@@ -113,30 +114,118 @@ def fazer_login():
                 messagebox.showerror('erro',  'preencha todos os campos')
 
         def ver_camisas():
+            #janela_camisas.destroy()
+
+            def sair():
+                janela_estoque.destroy()
+                
             janela_estoque = tk.Tk()
-            janela_estoque.title('Estoque')
-            
-            janela_estoque.geometry("500x300+250+200")
-            janela_estoque.resizable(width=1, height=1)
-
-            txt = tk.Text(janela_estoque, font='Arial', width=500, height=300)
-            txt.pack() 
-
-
-            
-
-
-            conexao = sqlite3.connect("tronos.db")
-            cursor = conexao.cursor()
-            cursor.execute("SELECT * FROM camisas")
-            rows = cursor.fetchall()
-
-            
-            for row in rows:
-                txt.insert("end",f'Codigo: {row[0]}\nNome: {row[1]}\nCor: {row[2]}\nTamanho: {row[3]}\nQuantidade: {row[4]}\nPreco: R${row[5]}\n\n')
+                
+            def carregar_dados():
+                treeview.delete(*treeview.get_children())
+                conexao = sqlite3.connect("tronos.db")
+                cursor = conexao.cursor()
+                cursor.execute("SELECT codigo, nome, cor, tamanho, quantidade, preco FROM camisas")
+                resultados = cursor.fetchall()
+                for resultado in resultados:
+                    treeview.insert(parent="", index="end", values=resultado)
 
                 conexao.close()
             
+            def inserir():
+                quantidade = ent_quantidade.get()
+                preco = ent_preco.get()
+                codigo = ent_codigo.get()
+                if quantidade and preco and codigo:
+                    try:
+                        conexao = sqlite3.connect("tronos.db")
+                        cursor = conexao.cursor()
+                        cursor.execute("UPDATE camisas SET quantidade = ?, preco = ? WHERE codigo = ?", (quantidade, preco, codigo))
+                        conexao.commit()
+                        messagebox.showinfo("sucesso", "valores alterados")
+
+                    except:
+                        messagebox.showerror('erro', 'erro ao inserir')
+                        return
+                    finally:
+                        conexao.close()
+
+                    carregar_dados()
+                    ent_quantidade.delete(0, tk.END)
+                    ent_preco.delete(0, tk.END)
+                    ent_codigo.delete(0, tk.END)
+
+                    
+                else:
+                    messagebox.showerror('erro', 'preencha todos os campos!')
+                    return
+
+                    
+                    #ent_quantidade.focus()
+
+
+
+
+            treeview = ttk.Treeview(janela_estoque)
+            treeview["columns"] = ("codigo","nome", "cor", "tamanho", "quantidade", "preco")
+            treeview.column("0", width=50)
+            treeview.column("codigo", width=50)
+            treeview.column("nome", width=100)
+            treeview.column("cor", width=50)
+            treeview.column("tamanho", width=100)
+            treeview.column("quantidade", width=100)
+            treeview.column("preco", width=100)
+            treeview.heading("#0", text="")
+            treeview.heading("codigo", text="id")
+            treeview.heading("nome", text="nome")
+            treeview.heading("cor", text='cor')
+            treeview.heading("tamanho", text="tamanho")
+            treeview.heading("quantidade", text="quantidade")
+            treeview.heading("preco", text="preco")
+
+            #adicionar itens no treeview
+            carregar_dados()
+            treeview.pack()
+            janela_estoque.title('Estoque')
+            janela_estoque.geometry("700x500+250+200")
+            janela_estoque.resizable(width=1, height=1)
+
+            frm_a = tk.LabelFrame(janela_estoque, text='Alterar Quantidade ou Preço')
+            frm_a.pack(fill='both', expand='yes', padx=10, pady=10)
+
+            lbl_quantidade = tk.Label(frm_a, text='quantidade')
+            lbl_quantidade.pack(side='left')
+            ent_quantidade = tk.Entry(frm_a)
+            ent_quantidade.pack(side='left', padx=10)
+            lbl_preco = tk.Label(frm_a, text='preco')
+            lbl_preco.pack(side='left')
+            ent_preco = tk.Entry(frm_a)
+            ent_preco.pack(side='left', padx=10)
+            lbl_codigo = tk.Label(frm_a, text="codigo")
+            lbl_codigo.pack(side='left')
+            ent_codigo = tk.Entry(frm_a)
+            ent_codigo.pack(side='left', padx=10)
+            btn_inserir = tk.Button(frm_a, text='inserir', command=inserir)
+            btn_inserir.pack(side='left', padx=10)
+            btn_voltar = tk.Button(janela_estoque, text='sair', command=sair)
+            btn_voltar.pack(side='right', padx=10)
+
+
+            """ txt = tk.Text(janela_estoque, font='Arial', width=500, height=300)
+            txt.pack() 
+ """
+
+            """ conexao = sqlite3.connect("tronos.db")
+            cursor = conexao.cursor()
+            cursor.execute("SELECT * FROM camisas")
+            #rows = cursor.fetchall()
+
+            
+             for row in rows:
+                txt.insert("end",f'Codigo: {row[0]}\nNome: {row[1]}\nCor: {row[2]}\nTamanho: {row[3]}\nQuantidade: {row[4]}\nPreco: R${row[5]}\n\n')
+ 
+            conexao.close()
+             """
             janela_estoque.mainloop()
         
 
